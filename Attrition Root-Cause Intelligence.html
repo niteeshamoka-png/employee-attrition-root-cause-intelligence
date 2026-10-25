@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attrition Root-Cause Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#EDF1F0;--card:#fff;--ink:#12201F;--mut:#5C6B69;--line:#D5DEDC;--teal:#0F6B63;--tealL:#D9EEEB;--red:#CF4339;--amb:#D99A12;--vio:#4A3FA0;--vioL:#E8E5F7;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1716;--card:#16221F;--ink:#E6EFED;--mut:#93A5A2;--line:#27373A;--teal:#4CC2B4;--tealL:#173633;--red:#F0685D;--amb:#E9B33A;--vio:#A79BF2;--vioL:#262244;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1716;--card:#16221F;--ink:#E6EFED;--mut:#93A5A2;--line:#27373A;--teal:#4CC2B4;--tealL:#173633;--red:#F0685D;--amb:#E9B33A;--vio:#A79BF2;--vioL:#262244;color-scheme:dark}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'Public Sans',system-ui,sans-serif}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;margin:0;letter-spacing:-.01em}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+aside{background:var(--ink);color:#DDE8E6;padding:22px 16px;position:sticky;top:0;height:100vh;align-self:start}
+:root[data-theme="dark"] aside{background:#0A1110}
+aside h1{font-size:19px;color:#fff;line-height:1.2}aside small{color:#8FA5A1;display:block;margin:6px 0 22px}
+nav button{display:block;width:100%;text-align:left;background:none;border:0;color:#B9CCC9;padding:10px 12px;border-radius:8px;font:500 14px 'Public Sans';cursor:pointer;margin-bottom:2px}
+nav button.on{background:#1E3C39;color:#fff}nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
+.dsel{margin-top:22px;font-size:12px;color:#8FA5A1}.dsel select{width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid #2E4A47;background:#14302D;color:#fff;font:14px 'Public Sans'}
+main{padding:26px 30px;max-width:1240px;width:100%}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.top h2{font-size:30px}.top p{margin:4px 0 0;color:var(--mut);max-width:620px}
+.pill{font-size:12px;padding:5px 10px;border-radius:99px;background:var(--vioL);color:var(--vio);font-weight:600}
+.grid{display:grid;gap:16px}.k4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1.25fr 1fr}.g3{grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+.card h3{font-size:17px;margin-bottom:4px}.sub{color:var(--mut);font-size:13px;margin:0 0 12px}
+.kpi b{display:block;font:700 34px Fraunces,serif;letter-spacing:-.02em}.kpi span{color:var(--mut);font-size:13px}
+.kpi.hero{background:var(--ink);color:#fff;border-color:var(--ink)}.kpi.hero span{color:#9FB5B1}.kpi.hero b{font-size:46px;color:#fff}
+.bad{color:var(--red)}.good{color:var(--teal)}
+canvas{max-width:100%}.ch{position:relative;height:260px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}th{text-align:left;color:var(--mut);font-weight:500;padding:6px 8px;border-bottom:1px solid var(--line)}td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.wrap{overflow-x:auto}
+.bar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;min-width:70px}.bar i{display:block;height:100%}
+.tag{font-size:11.5px;padding:3px 8px;border-radius:6px;background:var(--tealL);color:var(--teal);font-weight:600;white-space:nowrap}.tag.r{background:#F8DAD7;color:#A32A21}.tag.a{background:#F6E5BC;color:#7A5600}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tag.r{background:#4A2220;color:#F6A39B}:root:not([data-theme="light"]) .tag.a{background:#4A3A12;color:#F2CE73}}
+.btn{border:1px solid var(--teal);background:var(--teal);color:#fff;padding:7px 12px;border-radius:8px;font:600 13px 'Public Sans';cursor:pointer}.btn.o{background:none;color:var(--teal)}.btn.on{background:var(--ink);border-color:var(--ink)}
+.tab{display:none}.tab.on{display:block}
+.chat{display:grid;grid-template-columns:1fr 300px;gap:16px}
+.log{height:440px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px}
+.m{max-width:92%;padding:11px 14px;border-radius:12px;font-size:14px}.m.u{align-self:flex-end;background:var(--ink);color:#fff}.m.a{background:var(--bg);border:1px solid var(--line)}
+.trace{font-size:12px;color:var(--vio);margin-bottom:8px;display:flex;flex-direction:column;gap:3px}.trace div:before{content:"\2713  ";font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.chips button{background:var(--vioL);color:var(--vio);border:0;border-radius:99px;padding:7px 12px;font:600 12.5px 'Public Sans';cursor:pointer}
+.ask{display:flex;gap:8px}.ask input{flex:1;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:14px 'Public Sans'}
+.ag{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.ag:last-child{border:0}.dot{width:10px;height:10px;border-radius:50%;background:var(--teal);margin-top:6px;flex:none}.dot.w{background:var(--amb);animation:p 1s infinite}
+@keyframes p{50%{opacity:.3}}@media (prefers-reduced-motion:reduce){.dot.w{animation:none}}
+.sl{margin:12px 0}.sl label{display:flex;justify-content:space-between;font-size:13.5px;font-weight:500}.sl input{width:100%;accent-color:var(--teal)}
+.res b{font:700 26px Fraunces,serif}.res div{padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
+.note{font-size:12.5px;color:var(--mut);background:var(--bg);border-radius:8px;padding:10px 12px;margin-top:12px}
+.brief h3{margin-top:14px}.brief p,.brief li{color:var(--ink);max-width:70ch}
+@media (max-width:900px){.app{grid-template-columns:1fr}aside{position:static;height:auto;padding:14px}aside small{display:none}nav{display:flex;gap:4px;overflow-x:auto}nav button{white-space:nowrap;width:auto}.dsel{margin-top:10px}main{padding:18px 14px}.k4{grid-template-columns:1fr 1fr}.g2,.g3,.chat{grid-template-columns:1fr}.top h2{font-size:24px}}
+</style></head><body>
+<div class="app">
+<aside><h1>Attrition Root-Cause Intelligence</h1><small>Multi-agent people analytics</small>
+<nav id="nav"></nav>
+<div class="dsel"><label for="dept">Department scope</label><select id="dept"></select></div></aside>
+<main>
+<div class="top"><div><h2 id="ttl"></h2><p id="sub"></p></div><span class="pill">Assumed data: 640 employees, 12 months</span></div>
+
+<section class="tab on" id="t-over">
+ <div class="grid k4" id="kpis"></div>
+ <div class="grid g2" style="margin-top:16px">
+  <div class="card"><h3>Exits by month</h3><p class="sub">Voluntary leavers across the last 12 months</p><div class="ch"><canvas id="c1"></canvas></div></div>
+  <div class="card"><h3>Attrition by department</h3><p class="sub">Share of headcount that left</p><div class="ch"><canvas id="c2"></canvas></div></div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Who is most likely to leave next</h3><p class="sub">Current employees ranked by modelled 12-month exit risk, with the factor pushing risk up the most</p><div class="wrap"><table id="risk"></table></div></div>
+</section>
+
+<section class="tab" id="t-drv">
+ <div class="grid g2">
+  <div class="card"><h3>What separates leavers from stayers</h3><p class="sub">Correlation between each factor and leaving. Right of zero means more of the factor goes with more exits.</p><div class="ch" style="height:320px"><canvas id="c3"></canvas></div></div>
+  <div class="card"><h3>Risk lift by factor</h3><p class="sub">Exit rate in the riskiest third compared with the safest third</p><div class="wrap"><table id="lift"></table></div></div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Pay position and overtime together</h3><p class="sub">Exit rate when two pressures stack. Under-paid and overworked staff leave far more than either group alone.</p><div class="ch"><canvas id="c4"></canvas></div></div>
+</section>
+
+<section class="tab" id="t-agent">
+ <div class="chat">
+  <div class="card"><h3>Retention Copilot</h3><p class="sub">Ask in plain language. Four specialist agents work on each question and show their steps.</p>
+   <div class="log" id="log"></div>
+   <div class="chips" id="chips"></div>
+   <div class="ask"><input id="q" placeholder="e.g. Why is Sales losing people?" aria-label="Ask the agent"><button class="btn" id="go">Ask agent</button></div></div>
+  <div class="card"><h3>Agent team</h3><p class="sub">Orchestrator hands each question to the right specialist.</p><div id="agents"></div>
+   <div class="note">Human-in-the-loop: the agent only recommends. Nothing is committed until you approve it on the Actions tab.</div></div>
+ </div>
+</section>
+
+<section class="tab" id="t-act">
+ <div class="grid g2">
+  <div class="card"><h3>Recommended interventions</h3><p class="sub">Each one is simulated on the current scope. Approve the ones you want in the plan.</p><div class="wrap"><table id="ints"></table></div></div>
+  <div class="card"><h3>Approved plan</h3><p class="sub">Combined effect of approved actions (overlap discounted by 15%)</p><div class="res" id="plan"></div></div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>What-if simulator</h3><p class="sub">Move the levers and watch expected exits change for the selected scope.</p>
+  <div class="grid g3"><div id="sliders"></div><div class="res" id="simres"></div></div></div>
+</section>
+
+<section class="tab" id="t-brief"><div class="card brief">
+ <h2>Understanding the problem</h2>
+ <p>Staff turnover is rising. Every exit costs recruiting fees, lost productivity and team disruption, and usually repeats because nobody knows why people leave. Exit interviews are late and biased; HR holds the real signals in separate systems.</p>
+ <h3>What the system must do</h3>
+ <ul><li><b>Integrate</b> performance, workload, pay, absenteeism, overtime, engagement and training data.</li><li><b>Diagnose</b> which organisational factors are associated with leaving, by department.</li><li><b>Predict</b> who is at risk so managers can act early.</li><li><b>Recommend</b> retention interventions backed by evidence and a cost-benefit case.</li></ul>
+ <h3>Important caution</h3>
+ <p>The dashboard shows association, not proof of cause. Before rolling out a costly action, pilot it and compare against a control group. Risk scores should guide conversations, never automatic decisions about individuals.</p>
+ <h3>Architecture (maps to course sessions 4, 11, 12, 14)</h3>
+ <p>Orchestrator agent, then Data Agent (cleans and joins), Diagnostic Agent (drivers), Risk Agent (scores), Intervention Agent (simulates and ranks), and a human approval gate for governance.</p>
+</div></section>
+</main></div>
+
+<script>
+// ---------- seeded assumed data ----------
+let seed=42;const rnd=()=>(seed=(seed*1664525+1013904223)%4294967296)/4294967296;
+const nrm=(m,s)=>m+s*(rnd()+rnd()+rnd()+rnd()-2)*1.73;
+const D={Sales:{n:110,ot:5,wl:3,cp:0,sal:62,e:0},Engineering:{n:150,ot:2,wl:0,cp:-.06,sal:98,e:0},Support:{n:140,ot:3,wl:11,cp:-.01,sal:44,e:-.6},Operations:{n:110,ot:4,wl:5,cp:-.02,sal:52,e:-.2},Finance:{n:70,ot:1,wl:-4,cp:.02,sal:84,e:.3},HR:{n:60,ot:0,wl:-6,cp:.01,sal:66,e:.4}};
+const F={ot:'Overtime hours / month',wl:'Workload index',cp:'Pay position (compa-ratio)',ab:'Absence days',en:'Engagement score',tr:'Training hours',pf:'Performance rating',tn:'Tenure (years)'};
+const logit=e=>-1.9+.055*e.ot+.025*(e.wl-65)-4*(e.cp-1)-.45*(e.en-6)+.09*e.ab-.02*e.tr+(e.tn<2?.6:0)+(e.pf>=4&&e.cp<.95?.7:0);
+const sig=x=>1/(1+Math.exp(-x));
+const E=[];let id=1000;
+for(const[d,p]of Object.entries(D))for(let i=0;i<p.n;i++){const e={id:'E'+id++,d,tn:Math.max(.2,nrm(4.5,3)),pf:Math.min(5,Math.max(1,Math.round(nrm(3.3,.9)))),ot:Math.max(0,nrm(8+p.ot*1.5,6)),wl:Math.min(100,Math.max(35,nrm(66+p.wl,12))),cp:Math.max(.75,nrm(.98+p.cp,.08)),ab:Math.max(0,Math.round(nrm(5,3))),en:Math.min(10,Math.max(1,nrm(6.3+p.e,1.6))),tr:Math.max(0,nrm(24,12)),sal:p.sal*1000*(.85+rnd()*.3)};E.push(e)}
+let lo=-3,hi=3;for(let k=0;k<30;k++){const m=(lo+hi)/2;const a=E.reduce((s,e)=>s+sig(logit(e)+m),0)/E.length;a>.2?hi=m:lo=m}
+const SH=(lo+hi)/2;const prob=e=>sig(logit(e)+SH);
+E.forEach(e=>{e.p=prob(e);e.left=rnd()<e.p;e.mo=Math.floor(rnd()*12)});
+// ---------- helpers ----------
+const $=s=>document.querySelector(s),pct=x=>(x*100).toFixed(1)+'%',usd=x=>'$'+Math.round(x).toLocaleString();
+const scope=()=>{const v=$('#dept').value;return E.filter(e=>v==='All'||e.d===v)};
+const act=()=>scope().filter(e=>!e.left);
+const corr=(xs,ys)=>{const n=xs.length,mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;let a=0,b=0,c=0;xs.forEach((x,i)=>{a+=(x-mx)*(ys[i]-my);b+=(x-mx)**2;c+=(ys[i]-my)**2});return a/Math.sqrt(b*c)};
+const dir={ot:1,wl:1,cp:-1,ab:1,en:-1,tr:-1,pf:0,tn:-1};
+function drivers(S){return Object.keys(F).map(k=>{const r=corr(S.map(e=>e[k]),S.map(e=>+e.left));const s=[...S].sort((a,b)=>a[k]-b[k]);const t=Math.floor(S.length/3);const L=s.slice(0,t),H=s.slice(-t);const rl=L.filter(e=>e.left).length/t,rh=H.filter(e=>e.left).length/t;const risky=r>0?rh:rl,safe=r>0?rl:rh;return{k,r,risky,safe,lift:risky/Math.max(safe,.01)}}).sort((a,b)=>Math.abs(b.r)-Math.abs(a.r))}
+const avgE=()=>{const o={};Object.keys(F).forEach(k=>o[k]=E.reduce((s,e)=>s+e[k],0)/E.length);return o};
+const AV=avgE();
+function mainFactor(e){const c={ot:.055*(e.ot-AV.ot),wl:.025*(e.wl-AV.wl),cp:-4*(e.cp-AV.cp),ab:.09*(e.ab-AV.ab),en:-.45*(e.en-AV.en),tr:-.02*(e.tr-AV.tr)};return Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0]}
+const IV=[
+ {n:'Cap overtime at 60% of today',f:e=>({...e,ot:e.ot*.6}),c:e=>600,why:'ot'},
+ {n:'Lift pay to 0.97 of market',f:e=>({...e,cp:Math.max(e.cp,.97)}),c:e=>Math.max(0,.97-e.cp)*e.sal,why:'cp'},
+ {n:'Manager coaching and engagement plan',f:e=>({...e,en:Math.min(10,e.en+1)}),c:e=>450,why:'en'},
+ {n:'Rebalance workload by 8 points',f:e=>({...e,wl:e.wl-8}),c:e=>700,why:'wl'},
+ {n:'Add 15 training hours',f:e=>({...e,tr:e.tr+15}),c:e=>500,why:'tr'},
+ {n:'Wellbeing and absence support',f:e=>({...e,ab:e.ab*.7}),c:e=>250,why:'ab'}];
+const exits=(A,f=x=>x)=>A.reduce((s,e)=>s+prob(f(e)),0);
+function evalIv(v,A){const b=exits(A),a=exits(A,v.f),cost=A.reduce((s,e)=>s+(prob(v.f(e))<prob(e)?v.c(e):0),0),sav=(b-a)*A.reduce((s,e)=>s+.5*e.sal,0)/A.length;return{...v,avoid:b-a,cost,sav,roi:cost?sav/cost:0}}
+const approved=new Set();
+// ---------- charts ----------
+const CH={};const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function chart(id,cfg){CH[id]&&CH[id].destroy();cfg.options={responsive:true,maintainAspectRatio:false,...cfg.options};Chart.defaults.color=css('--mut');Chart.defaults.font.family="'Public Sans',sans-serif";CH[id]=new Chart($('#'+id),cfg)}
+const MN=['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
+// ---------- render ----------
+const titles={over:['Attrition overview','Where we are losing people, how fast, and who may go next.'],drv:['Root-cause drivers','Which organisational factors travel with exits.'],agent:['Retention Copilot','An agent team that explains the data and recommends action.'],act:['Actions and simulator','Test interventions, then approve what goes into the plan.'],brief:['Problem brief','What the statement asks for and how this solution answers it.']};
+function render(){const S=scope(),A=act(),L=S.filter(e=>e.left);
+ const cost=L.reduce((s,e)=>s+.5*e.sal,0),risk=exits(A);
+ const hi=A.filter(e=>e.p>=.35).length;
+ $('#kpis').innerHTML=`<div class="card kpi hero"><span>12-month attrition</span><b>${pct(L.length/S.length)}</b><span>${L.length} of ${S.length} employees left</span></div>
+ <div class="card kpi"><span>Replacement cost lost</span><b class="bad">${usd(cost)}</b><span>Assumed at 50% of salary per exit</span></div>
+ <div class="card kpi"><span>High-risk employees now</span><b class="${hi?'bad':'good'}">${hi}</b><span>Exit risk of 35% or more</span></div>
+ <div class="card kpi"><span>Expected exits next year</span><b>${risk.toFixed(0)}</b><span>If nothing changes</span></div>`;
+ const mc=Array(12).fill(0);L.forEach(e=>mc[e.mo]++);
+ chart('c1',{type:'line',data:{labels:MN,datasets:[{data:mc,borderColor:css('--teal'),backgroundColor:css('--tealL'),fill:true,tension:.3,pointRadius:3}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:css('--line')}},x:{grid:{display:false}}}}});
+ const ds=Object.keys(D);chart('c2',{type:'bar',data:{labels:ds,datasets:[{data:ds.map(d=>{const x=E.filter(e=>e.d===d);return x.filter(e=>e.left).length/x.length*100}),backgroundColor:ds.map(d=>$('#dept').value===d?css('--red'):css('--teal')),borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:css('--line')},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}});
+ const top=[...A].sort((a,b)=>b.p-a.p).slice(0,7);
+ $('#risk').innerHTML='<tr><th>Employee</th><th>Department</th><th>Exit risk</th><th>Main pressure</th><th>Suggested first step</th></tr>'+top.map(e=>{const f=mainFactor(e);const iv=IV.find(v=>v.why===f);return`<tr><td><b>${e.id}</b></td><td>${e.d}</td><td><div class="bar"><i style="width:${e.p*100}%;background:${e.p>.5?css('--red'):css('--amb')}"></i></div>${pct(e.p)}</td><td><span class="tag ${e.p>.5?'r':'a'}">${F[f]}</span></td><td>${iv?iv.n:'Stay conversation'}</td></tr>`}).join('');
+ const d=drivers(S);
+ chart('c3',{type:'bar',data:{labels:d.map(x=>F[x.k]),datasets:[{data:d.map(x=>+x.r.toFixed(3)),backgroundColor:d.map(x=>x.r>0?css('--red'):css('--teal')),borderRadius:5}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:css('--line')}},y:{grid:{display:false}}}}});
+ $('#lift').innerHTML='<tr><th>Factor</th><th>Riskiest third</th><th>Safest third</th><th>Lift</th></tr>'+d.filter(x=>x.k!=='pf').map(x=>`<tr><td>${F[x.k]}</td><td>${pct(x.risky)}</td><td>${pct(x.safe)}</td><td><span class="tag ${x.lift>2?'r':x.lift>1.4?'a':''}">${x.lift.toFixed(1)}x</span></td></tr>`).join('');
+ const g=(a,b)=>{const x=S.filter(e=>(a?e.cp<.95:e.cp>=.95)&&(b?e.ot>12:e.ot<=12));return x.length?x.filter(e=>e.left).length/x.length*100:0};
+ chart('c4',{type:'bar',data:{labels:['Paid at or above 0.95','Paid below 0.95'],datasets:[{label:'Overtime 12h or less',data:[g(0,0),g(1,0)],backgroundColor:css('--teal'),borderRadius:5},{label:'Overtime over 12h',data:[g(0,1),g(1,1)],backgroundColor:css('--red'),borderRadius:5}]},options:{plugins:{legend:{position:'bottom'}},scales:{y:{grid:{color:css('--line')},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}});
+ renderActions();
+}
+function renderActions(){const A=act();const r=IV.map(v=>evalIv(v,A)).sort((a,b)=>b.roi-a.roi);
+ $('#ints').innerHTML='<tr><th>Intervention</th><th>Exits avoided</th><th>Cost</th><th>Return</th><th></th></tr>'+r.map((v,i)=>`<tr><td><b>${v.n}</b><br><span class="sub" style="margin:0">Targets ${F[v.why].toLowerCase()}</span></td><td>${v.avoid.toFixed(1)}</td><td>${usd(v.cost)}</td><td><span class="tag ${v.roi>1.5?'':'a'}">${v.roi.toFixed(1)}x</span></td><td><button class="btn ${approved.has(v.n)?'on':'o'}" data-i="${v.n}">${approved.has(v.n)?'Approved':'Approve'}</button></td></tr>`).join('');
+ document.querySelectorAll('#ints .btn').forEach(b=>b.onclick=()=>{approved.has(b.dataset.i)?approved.delete(b.dataset.i):approved.add(b.dataset.i);renderActions()});
+ const ap=r.filter(v=>approved.has(v.n)),av=ap.reduce((s,v)=>s+v.avoid,0)*.85,co=ap.reduce((s,v)=>s+v.cost,0),sv=ap.reduce((s,v)=>s+v.sav,0)*.85;
+ $('#plan').innerHTML=ap.length?`<div><span>Actions approved</span><b>${ap.length}</b></div><div><span>Exits avoided</span><b class="good">${av.toFixed(1)}</b></div><div><span>Programme cost</span><b>${usd(co)}</b></div><div><span>Net benefit</span><b class="${sv-co>0?'good':'bad'}">${usd(sv-co)}</b></div>`:'<p class="sub">No actions approved yet. Approve interventions on the left to build the plan.</p>';
+ sim()}
+const LV=[['ot','Cut overtime',0,50,'%'],['pay','Raise pay floor to',90,105,'% of market'],['en','Engagement gain',0,20,' x0.1 pts'],['wl','Reduce workload',0,20,' pts'],['tr','Extra training',0,40,' hrs']];
+function buildSliders(){$('#sliders').innerHTML=LV.map(l=>`<div class="sl"><label for="s_${l[0]}">${l[1]}<span id="v_${l[0]}">0</span></label><input type="range" id="s_${l[0]}" min="${l[2]}" max="${l[3]}" value="${l[0]==='pay'?90:0}"></div>`).join('');LV.forEach(l=>$('#s_'+l[0]).oninput=sim)}
+function sim(){if(!$('#s_ot'))return;const v={};LV.forEach(l=>{v[l[0]]=+$('#s_'+l[0]).value;$('#v_'+l[0]).textContent=' '+v[l[0]]+l[4]});
+ const A=act(),f=e=>({...e,ot:e.ot*(1-v.ot/100),cp:Math.max(e.cp,v.pay/100),en:Math.min(10,e.en+v.en/10),wl:e.wl-v.wl,tr:e.tr+v.tr});
+ const b=exits(A),a=exits(A,f),cost=A.reduce((s,e)=>s+(v.ot?600*v.ot/40:0)+Math.max(0,v.pay/100-e.cp)*e.sal+v.en*45+v.wl*90+v.tr*33,0),sav=(b-a)*A.reduce((s,e)=>s+.5*e.sal,0)/A.length;
+ $('#simres').innerHTML=`<div><span>Expected exits today</span><b>${b.toFixed(1)}</b></div><div><span>Expected exits with levers</span><b class="good">${a.toFixed(1)}</b></div><div><span>Exits avoided</span><b>${(b-a).toFixed(1)}</b></div><div><span>Net benefit</span><b class="${sav-cost>0?'good':'bad'}">${usd(sav-cost)}</b></div>`}
+// ---------- agent ----------
+const AG=[['Orchestrator','Reads the question and picks specialists'],['Data Agent','Joins HR, payroll, time and survey data'],['Diagnostic Agent','Finds factors linked to exits'],['Risk Agent','Scores current employees'],['Intervention Agent','Simulates and ranks actions']];
+$('#agents').innerHTML=AG.map((a,i)=>`<div class="ag"><span class="dot" id="ag${i}"></span><div><b>${a[0]}</b><br><span style="color:var(--mut)">${a[1]}</span></div></div>`).join('');
+const chips=['Why are people leaving?','Who is at risk?','Which intervention gives best return?','Tell me about Sales','Does overtime matter?','Does pay matter?'];
+$('#chips').innerHTML=chips.map(c=>`<button>${c}</button>`).join('');
+const log=$('#log');
+function say(t,cls,trace){const d=document.createElement('div');d.className='m '+cls;d.innerHTML=(trace?`<div class="trace">${trace.map(x=>`<div>${x}</div>`).join('')}</div>`:'')+t;log.appendChild(d);log.scrollTop=log.scrollHeight}
+say('Hello. I analyse the assumed HR data for the department selected on the left. Try a suggested question or type your own.','a');
+function answer(q){const s=q.toLowerCase(),S=scope(),A=act(),d=drivers(S),sc=$('#dept').value;let used=[1],t='';
+ const dn=Object.keys(D).find(x=>s.includes(x.toLowerCase()));
+ if(dn){$('#dept').value=dn;render();const X=E.filter(e=>e.d===dn),r=X.filter(e=>e.left).length/X.length,dd=drivers(X).slice(0,3);used=[1,2];t=`<b>${dn}</b> lost ${pct(r)} of staff (company average ${pct(E.filter(e=>e.left).length/E.length)}). Strongest linked factors: ${dd.map(x=>F[x.k].toLowerCase()+` (${x.lift.toFixed(1)}x lift)`).join(', ')}. I have switched the dashboard to this department.`}
+ else if(/overtime/.test(s)){const x=d.find(x=>x.k==='ot');used=[1,2];t=`Yes. In ${sc==='All'?'the company':sc}, employees in the heaviest overtime third left at ${pct(x.risky)} against ${pct(x.safe)} in the lightest third (${x.lift.toFixed(1)}x). Capping overtime is the simplest lever: see its return on the Actions tab.`}
+ else if(/pay|salary|comp/.test(s)){const x=d.find(x=>x.k==='cp');used=[1,2];t=`Pay position matters most for high performers. Staff in the lowest-paid third left at ${pct(x.risky)} against ${pct(x.safe)} in the best-paid third (${x.lift.toFixed(1)}x). Targeted pay fixes cost less than blanket raises.`}
+ else if(/risk|who|leave next|flight/.test(s)){const top=[...A].sort((a,b)=>b.p-a.p).slice(0,3);used=[1,3];t=`Highest-risk people in ${sc==='All'?'the company':sc}:<br>${top.map(e=>`<b>${e.id}</b> (${e.d}) at ${pct(e.p)}, mainly ${F[mainFactor(e)].toLowerCase()}`).join('<br>')}<br>Use these scores to prompt manager conversations, not to make decisions about a person.`}
+ else if(/interven|recommend|action|return|roi|best|fix|retain/.test(s)){const r=IV.map(v=>evalIv(v,A)).sort((a,b)=>b.roi-a.roi);used=[1,2,3,4];t=`Best returns for ${sc==='All'?'the company':sc}:<br>${r.slice(0,3).map((v,i)=>`${i+1}. <b>${v.n}</b>: avoids ${v.avoid.toFixed(1)} exits, ${v.roi.toFixed(1)}x return`).join('<br>')}<br>Open the Actions tab to approve them. I will not change anything until you do.`}
+ else if(/why|driver|cause|reason|factor|leaving/.test(s)){used=[1,2];t=`Top linked factors in ${sc==='All'?'the company':sc}:<br>${d.slice(0,4).map((x,i)=>`${i+1}. <b>${F[x.k]}</b>: riskiest third leaves ${x.lift.toFixed(1)}x as often`).join('<br>')}<br>These are associations. Pilot any fix against a control group before scaling.`}
+ else t='I can explain drivers, list at-risk employees, rank interventions, or profile a department. Try “Why are people leaving?” or “Tell me about Support”.';
+ const steps=['Orchestrator: routed question to '+used.filter(i=>i>0).map(i=>AG[i][0]).join(' and '),...used.filter(i=>i).map(i=>AG[i][0]+': done on '+S.length+' records')];
+ AG.forEach((a,i)=>$('#ag'+i).classList.toggle('w',i===0||used.includes(i)));
+ setTimeout(()=>{AG.forEach((a,i)=>$('#ag'+i).classList.remove('w'));say(t,'a',steps)},700)}
+function ask(q){if(!q.trim())return;say(q,'u');$('#q').value='';answer(q)}
+$('#go').onclick=()=>ask($('#q').value);$('#q').onkeydown=e=>e.key==='Enter'&&ask($('#q').value);
+document.querySelectorAll('#chips button').forEach(b=>b.onclick=()=>ask(b.textContent));
+// ---------- nav ----------
+const tabs=[['over','Overview'],['drv','Root causes'],['agent','Retention Copilot'],['act','Actions'],['brief','Problem brief']];
+$('#nav').innerHTML=tabs.map(t=>`<button data-t="${t[0]}">${t[1]}</button>`).join('');
+function go(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('#ttl').textContent=titles[t][0];$('#sub').textContent=titles[t][1];if(location.hash!=='#'+t)try{history.replaceState(null,'','#'+t)}catch(e){}}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+$('#dept').innerHTML=['All',...Object.keys(D)].map(d=>`<option>${d}</option>`).join('');$('#dept').onchange=render;
+buildSliders();render();go(tabs.some(t=>'#'+t[0]===location.hash)?location.hash.slice(1):'over');
+</script></body></html>
